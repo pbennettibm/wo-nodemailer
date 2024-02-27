@@ -1,0 +1,105 @@
+openapi: 3.0.1
+info:
+  title: WO Emailer
+  description: API for WO Emailer
+  x-ibm-application-name: WO Emailer 0.0.1
+  x-ibm-application-id: WO-Emailer-0.0.1
+  x-ibm-skill-type: imported
+  x-ibm-skill-headers:
+    caller-id: caller-id
+    caller-name: caller-name
+  x-ibm-comm-timeouts:
+    connectTimeout: 20000
+    responseTimeout: 120000
+  version: 0.0.1
+servers:
+  - url: https://wo-nodemailer.1dgs9s9eawtb.us-south.codeengine.appdomain.cloud/
+tags:
+  - name: send_email
+    description: Send an email with webex meeting information
+security:
+  - BasicAuth: []
+paths:
+  /email:
+    post:
+      x-ibm-nl-output-template: Your email has been sent to {$.emails}.
+      summary: Send an email with webex meeting information
+      operationId: post_email
+      tags:
+        - send_email
+      description: Send an email with webex meeting information
+      parameters:
+        - in: header
+          name: caller-id
+          schema:
+            type: string
+            title: Email
+            x-ibm-show: false
+          description: email
+      requestBody:
+        description: email generation
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/email_request_body'
+      responses:
+        '201':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/email_response_body_201'
+        '500':
+          description: Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/email_response_body_500'
+components:
+  securitySchemes:
+    BasicAuth:
+      type: http
+      scheme: basic
+  schemas:
+    email_request_body:
+      type: object
+      required:
+        - to
+        - subject
+        - message
+      properties:
+        to:
+          type: string
+          title: Recipients
+        subject:
+          type: string
+          title: Subject
+        message:
+          type: string
+          title: Email message
+          x-ibm-multiline: 'true'
+        meetingLink:
+          type: string
+          title: Meeting link
+          x-ibm-show: false
+        meetingPassword:
+          type: string
+          title: Meeting password
+          x-ibm-show: false
+        transcript:
+          type: string
+          title: Transcript
+          x-ibm-show: false
+    email_response_body_201:
+      type: object
+      properties:
+        jobSkills:
+          type: array
+          items:
+            type: string
+    email_response_body_500:
+      type: object
+      properties:
+        error:
+          type: string
