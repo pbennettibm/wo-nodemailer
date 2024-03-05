@@ -1,4 +1,5 @@
 const express = require("express");
+const Axios = require("axios");
 const nodemailer = require("nodemailer");
 const dotenv = require("dotenv");
 dotenv.config();
@@ -6,33 +7,18 @@ const app = express();
 const port = 3000;
 
 app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 
 app.get("/healthcheck", async (req, res) => {
   res.send("healthy");
 });
 
 app.post("/email", async (req, res) => {
-  const emailRequestBody = await req.body;
-  let emailMessage = emailRequestBody.message;
+  const emailRequestBody = req.body;
+  let emailMessage = `${emailRequestBody.message}`;
   console.log(emailRequestBody);
 
-  if (emailRequestBody.meetingLink) {
-    emailMessage += `
-    
-Meeting Link - ${emailRequestBody.meetingLink}`;
-  }
-
-  if (emailRequestBody.meetingPassword) {
-    emailMessage += `  Password: ${emailRequestBody.meetingPassword}`;
-  }
-
-  if (emailRequestBody.transcript) {
-    emailMessage += `
-    
-Transcript - ${emailRequestBody.transcript}`;
-  }
-
-  const sendMail = () => {
+  const sendMail = (editedMessage) => {
     const transporter = nodemailer.createTransport({
       service: process.env.EMAIL_SERVICE,
       auth: {
@@ -45,7 +31,7 @@ Transcript - ${emailRequestBody.transcript}`;
       from: process.env.EMAIL_FROM,
       to: emailRequestBody.to,
       subject: emailRequestBody.subject,
-      text: emailMessage,
+      text: editedMessage,
     };
 
     transporter.sendMail(options, (error, info) => {
@@ -59,7 +45,43 @@ Transcript - ${emailRequestBody.transcript}`;
     });
   };
 
-  sendMail();
+  if (emailRequestBody.meetingLink) {
+    emailMessage += `
+
+
+Meeting Link - ${emailRequestBody.meetingLink}`;
+  }
+
+  if (emailRequestBody.meetingPassword) {
+    emailMessage += `  Password: ${emailRequestBody.meetingPassword}`;
+  }
+
+  if (emailRequestBody.transcript) {
+    const config = {
+      headers: { Authorization: `Bearer ${process.env.WEBEX_TOKEN}` },
+    };
+    console.log("transcript here", config);
+
+    Axios.get(emailRequestBody.transcript, config)
+      .then(async (response) => {
+        emailMessage += `
+
+
+Full Transcript -
+
+
+${response.data}`;
+
+        console.log("message transcript", emailMessage);
+
+        sendMail(emailMessage);
+      })
+      .catch((error) => {
+        console.log("error", error);
+      });
+  } else {
+    sendMail(emailMessage);
+  }
 });
 
 app.listen(port, () => {

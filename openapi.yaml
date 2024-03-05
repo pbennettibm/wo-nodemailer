@@ -1,9 +1,9 @@
 openapi: 3.0.1
 info:
-  title: WO Emailer
-  description: API for WO Emailer
-  x-ibm-application-name: WO Emailer 0.0.1
-  x-ibm-application-id: WO-Emailer-0.0.1
+  title: WO Webex Emailer
+  description: API for WO Webex Emailer
+  x-ibm-application-name: WO Webex Emailer 0.0.1
+  x-ibm-application-id: WO-Webex-Emailer-0.0.1
   x-ibm-skill-type: imported
   x-ibm-skill-headers:
     caller-id: caller-id
@@ -13,10 +13,10 @@ info:
     responseTimeout: 120000
   version: 0.0.1
 servers:
-  - url: https://wo-nodemailer.1dgs9s9eawtb.us-south.codeengine.appdomain.cloud/
+  - url: https://wo-webex-nodemailer.1dlfcmvq4gvo.us-south.codeengine.appdomain.cloud/
 tags:
   - name: send_email
-    description: Send an email with webex meeting information
+    description: Send an email with webex meeting information - 2
 security:
   - BasicAuth: []
 paths:
